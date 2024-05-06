@@ -1,29 +1,62 @@
-import { useState } from 'react';
-import { dkeeper_backend } from 'declarations/dkeeper_backend';
+import { dkeeper_backend } from "declarations/dkeeper_backend";
+import { useState, useEffect } from "react";
+
+import Header from "./Header";
+import CreateArea from "./CreateArea";
+import Note from "./Note";
+import Footer from "./Footer";
 
 function App() {
-  const [greeting, setGreeting] = useState('');
+  const [notes, setNotes] = useState([]);
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    const name = event.target.elements.name.value;
-    dkeeper_backend.greet(name).then((greeting) => {
-      setGreeting(greeting);
+  function addNote(newNote) {
+    setNotes((prevNotes) => {
+      // .note, .content are defind in dkeeper_backend
+      dkeeper_backend.createNote(newNote.title, newNote.content);
+      return [newNote, ...prevNotes]; // order important when creating new notes
     });
-    return false;
+  }
+
+  async function fetchData() {
+    const notesArray = await dkeeper_backend.getNotes();
+    setNotes(notesArray);
+  }
+
+  useEffect(() => {
+    console.log("useEffect");
+    // fetchDate has to be async & inside useEffect we can't use async directly
+    fetchData();
+  }, []); // [] is used to run useEffect only once
+
+  function deleteNote(id) {
+    // remove note from backend
+    dkeeper_backend.deleteNote(id);
+
+    setNotes((prevNotes) => {
+      return prevNotes.filter((noteItem, index) => {
+        return index !== id;
+      });
+    });
   }
 
   return (
     <main>
-      <img src="/logo2.svg" alt="DFINITY logo" />
-      <br />
-      <br />
-      <form action="#" onSubmit={handleSubmit}>
-        <label htmlFor="name">Enter your name: &nbsp;</label>
-        <input id="name" alt="Name" type="text" />
-        <button type="submit">Click Me!</button>
-      </form>
-      <section id="greeting">{greeting}</section>
+      <div>
+        <Header />
+        <CreateArea onAdd={addNote} />
+        {notes.map((noteItem, index) => {
+          return (
+            <Note
+              key={index}
+              id={index}
+              title={noteItem.title}
+              content={noteItem.content}
+              onDelete={deleteNote}
+            />
+          );
+        })}
+        <Footer />
+      </div>
     </main>
   );
 }

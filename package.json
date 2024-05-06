@@ -14,5 +14,11 @@
   "type": "module",
   "workspaces": [
     "src/dkeeper_frontend"
-  ]
+  ],
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@mui/icons-material": "^5.15.16",
+    "@mui/material": "^5.15.16",
+    "styled-components": "^6.1.9"
+  }
 }
